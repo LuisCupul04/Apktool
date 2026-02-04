@@ -29,6 +29,8 @@ jobs:
         file: [ aapt2 ]
     steps:
       - uses: actions/checkout@v6
+      - name: Fix permissions for prebuilt binaries
+        run: chmod -R +x ${{ env.BINARY_PATH }}
       - name: Verify Executable
         run: ${{ env.BINARY_PATH }}/macosx/${{ matrix.file }} version
       - name: Output Static
@@ -41,6 +43,8 @@ jobs:
         file: [ aapt2 ]
     steps:
       - uses: actions/checkout@v6
+      - name: Fix permissions for prebuilt binaries
+        run: chmod -R +x ${{ env.BINARY_PATH }}
       - name: Verify Executable
         run: ${{ env.BINARY_PATH }}/linux/${{ matrix.file }} version
       - name: Output Static
@@ -53,6 +57,8 @@ jobs:
         file: [ aapt2.exe ]
     steps:
       - uses: actions/checkout@v6
+      - name: Fix permissions for prebuilt binaries
+        run: chmod -R +x ${{ env.BINARY_PATH }}
       - name: Verify Executable
         run: ${{ env.BINARY_PATH }}/windows/${{ matrix.file }} version
       - name: Output Static
@@ -90,7 +96,7 @@ jobs:
   upload-artifact:
     runs-on: ubuntu-latest
     name: Build apktool.jar
-    if: github.repository == 'iBotPeaches/Apktool' && github.ref == 'refs/heads/main'
+    if: github.repository == 'LuisCupul04/Apktool' && github.ref == 'refs/heads/main'
     needs:
       - build-and-test-with-Java-8-and-later
     steps:
