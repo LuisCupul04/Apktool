@@ -64,34 +64,41 @@ jobs:
       - name: Output Static
         run: ldd ${{ env.BINARY_PATH }}/windows/${{ matrix.file }} || true
 
-  build-and-test-with-Java-8-and-later:
-    runs-on: ${{ matrix.os }}
-    needs:
-      - analyze-mac-aapt
-      - analyze-linux-aapt
-      - analyze-windows-aapt
-    name: Build/Test (JDK ${{ matrix.java }}, ${{ matrix.os }})
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ ubuntu-latest, macOS-latest, windows-latest ]
-        java: [ 8, 11, 17, 21 ]
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: ${{ matrix.java }}
+build-and-test-with-Java-8-and-later:
+  runs-on: ${{ matrix.os }}
+  needs:
+    - analyze-mac-aapt
+    - analyze-linux-aapt
+    - analyze-windows-aapt
+  name: Build/Test (JDK ${{ matrix.java }}, ${{ matrix.os }})
+  strategy:
+    fail-fast: true
+    matrix:
+      os: [ ubuntu-latest, macOS-latest, windows-latest ]
+      java: [ 8, 11, 17, 21 ]
+  steps:
+    - uses: actions/checkout@v6
+    
+    - name: Fix permissions for gradlew and prebuilt binaries
+      run: |
+        echo "Setting execution permissions..."
+        chmod +x gradlew
+        chmod -R +x brut.apktool/apktool-lib/src/main/resources/prebuilt/
+    
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: ${{ matrix.java }}
 
-      - uses: gradle/actions/setup-gradle@v5.0.1
+    - uses: gradle/actions/setup-gradle@v5.0.1
 
-      - name: Build (Linux/Mac)
-        if: runner.os != 'Windows'
-        run: ./gradlew build shadowJar proguard
+    - name: Build (Linux/Mac)
+      if: runner.os != 'Windows'
+      run: ./gradlew build shadowJar proguard
 
-      - name: Build (Windows)
-        if: runner.os == 'Windows'
-        run: ./gradlew.bat build shadowJar proguard
+    - name: Build (Windows)
+      if: runner.os == 'Windows'
+      run: ./gradlew.bat build shadowJar proguard
 
   upload-artifact:
     runs-on: ubuntu-latest
