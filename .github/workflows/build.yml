@@ -1,0 +1,210 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - '**.java'
+      - '**.kts'
+      - 'brut.apktool/apktool-lib/src/main/resources/**'
+      - 'brut.apktool/apktool-lib/src/test/**'
+      - '.github/workflows/**'
+      - 'gradle/libs.versions.toml'
+      - 'gradle/wrapper/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BINARY_PATH: brut.apktool/apktool-lib/src/main/resources/prebuilt
+
+jobs:
+  verify-binaries:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            binary_dir: linux
+            binary_name: aapt2
+          - os: macos-latest
+            binary_dir: macosx
+            binary_name: aapt2
+          - os: windows-latest
+            binary_dir: windows
+            binary_name: aapt2.exe
+    name: Verify binaries on ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Fix permissions for prebuilt binaries (Linux/Mac)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: chmod -R +x ${{ env.BINARY_PATH }}
+      
+      - name: Fix permissions for prebuilt binaries (Windows)
+        if: matrix.os == 'windows-latest'
+        run: echo "Windows doesn't need chmod"
+      
+      - name: Verify executable exists
+        shell: bash
+        run: |
+          echo "=== Checking binary existence ==="
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            # En Windows, mostrar la ruta y verificar si existe
+            echo "Windows path: ${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}"
+            if [ -f "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}" ]; then
+              echo "✓ Binary exists"
+              # Mostrar detalles del archivo
+              ls -la "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}"
+            else
+              echo "✗ Binary not found"
+              # Listar directorio para debugging
+              echo "Listing directory:"
+              ls -la "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/" || true
+            fi
+          else
+            # Linux/Mac
+            ls -la "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}"
+          fi
+      
+      - name: Test binary execution
+        shell: bash
+        run: |
+          echo "=== Testing binary execution ==="
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            # En Windows, ejecutar directamente desde bash (Git Bash puede ejecutar .exe)
+            echo "Executing Windows binary:"
+            "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}" version || {
+              echo "Direct execution failed, trying alternative method..."
+              # Alternativa: usar cmd
+              cmd /c "cd /d $(pwd) && ${{ env.BINARY_PATH }}\\${{ matrix.binary_dir }}\\${{ matrix.binary_name }} version"
+            }
+          else
+            # Linux/Mac
+            "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}" version
+          fi
+      
+      - name: Check binary type and dependencies
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          echo "=== Binary Analysis ==="
+          
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            # Para Linux: verificar tipo de binario
+            file_result=$(file "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}")
+            echo "File type: $file_result"
+            
+            # Intentar ldd solo si es dinámico (no fallar si es estático)
+            if echo "$file_result" | grep -q "dynamically linked"; then
+              echo "Dynamic binary - checking dependencies:"
+              ldd "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}"
+            elif echo "$file_result" | grep -q "statically linked"; then
+              echo "Static binary - no external dependencies"
+            else
+              echo "Unknown binary type, skipping ldd"
+            fi
+          else
+            # Para macOS: siempre usar otool -L
+            echo "macOS binary - checking dependencies with otool:"
+            otool -L "${{ env.BINARY_PATH }}/${{ matrix.binary_dir }}/${{ matrix.binary_name }}"
+          fi
+
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    needs: verify-binaries
+    name: Build/Test (JDK ${{ matrix.java }}, ${{ matrix.os }})
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: [8, 11, 17, 21]
+    steps:
+      - uses: actions/checkout@v6
+      
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: ${{ matrix.java }}
+      
+      - uses: gradle/actions/setup-gradle@v5.0.1
+      
+      - name: Setup GitHub Packages authentication
+        env:
+          ORG_GRADLE_PROJECT_gpr_user: ${{ github.actor }}
+          ORG_GRADLE_PROJECT_gpr_key: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          echo "Authentication configured for ${{ github.actor }}"
+      
+      - name: Build and test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            ./gradlew.bat build shadowJar --no-daemon --stacktrace
+          else
+            ./gradlew build shadowJar --no-daemon --stacktrace
+          fi
+
+  build-release:
+    runs-on: ubuntu-latest
+    name: Build Release Artifact
+    if: github.repository == 'LuisCupul04/Apktool' && github.ref == 'refs/heads/main'
+    needs: build-and-test
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      
+      - uses: gradle/actions/setup-gradle@v5.0.1
+        with:
+          dependency-graph: generate-and-submit
+      
+      - name: Setup GitHub Packages authentication
+        env:
+          ORG_GRADLE_PROJECT_gpr_user: ${{ github.actor }}
+          ORG_GRADLE_PROJECT_gpr_key: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          echo "Authentication configured for release build"
+      
+      - name: Build release artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          ./gradlew shadowJar --no-daemon --stacktrace -x test
+      
+      - name: Upload apktool.jar artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: apktool-cli
+          path: brut.apktool/apktool-cli/build/libs/apktool-*.jar
+      
+      - name: Upload apktool-lib artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: apktool-lib
+          path: brut.apktool/apktool-lib/build/libs/apktool-lib-*.jar

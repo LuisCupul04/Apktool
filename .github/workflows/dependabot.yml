@@ -1,0 +1,32 @@
+name: Dependabot via Actions
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      packages: read
+      
+    steps:
+      - name: Run Dependabot
+        uses: dependabot/dependabot-core@main
+        env:
+          # SOLO UNA definición de GITHUB_TOKEN aquí:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Variables adicionales que tu build.gradle.kts podría necesitar
+          GITHUB_ACTOR: LuisCupul04
+          # Para el repositorio privado, usa otro nombre de variable
+          GH_PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+        with:
+          package-manager: 'gradle'
+          directory: '/'
+          target-branch: 'master'  # o 'main', según tu rama principal

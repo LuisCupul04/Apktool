@@ -1,0 +1,70 @@
+name: Analyze
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      packages: read  # ✅ PERMISO PARA PAQUETES
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Necesario para CodeQL
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          queries: security-extended
+          java: 17
+
+      - name: Set up JDK 17 for building
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # ✅ Setup Gradle con cache
+      - name: Setup Gradle with caching
+        uses: gradle/actions/setup-gradle@v5.0.1
+        with:
+          cache-read-only: false
+
+      # ✅ SOLUCIÓN: Usar el MISMO método que en build.yml
+      - name: Setup GitHub Packages authentication
+        env:
+          # Gradle leerá automáticamente estas variables como propiedades
+          ORG_GRADLE_PROJECT_gpr_user: 'LuisCupul04'
+          ORG_GRADLE_PROJECT_gpr_key: ${{ secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          echo "✅ Autenticación configurada para GitHub Packages"
+          echo "Variables de entorno establecidas:"
+          echo "  - gpr.user: LuisCupul04"
+          echo "  - gpr.key: [PROTEGIDO]"
+
+      - name: Build project for CodeQL analysis
+        env:
+          # Timeout aumentado
+          GRADLE_OPTS: "-Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000"
+          ORG_GRADLE_PROJECT_GRADLE_WRAPPER_TIMEOUT: 60000
+          # Variables adicionales por si acaso
+          GITHUB_ACTOR: LuisCupul04
+          GITHUB_TOKEN: ${{ secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🚀 Iniciando build para CodeQL..."
+          echo "Verificando autenticación..."
+          ./gradlew clean classes --no-daemon --stacktrace
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
