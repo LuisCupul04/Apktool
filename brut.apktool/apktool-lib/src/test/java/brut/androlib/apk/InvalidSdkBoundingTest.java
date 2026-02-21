@@ -1,0 +1,110 @@
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
+ *  Copyright (C) 2022 Inotia00
+ *  Copyright (C) 2026 LuisCupul04 
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package brut.androlib.apk;
+
+import org.junit.Test;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+
+public class InvalidSdkBoundingTest {
+
+    @Test
+    public void checkIfInvalidValuesPass() {
+        ApkInfo apkInfo = new ApkInfo();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("minSdkVersion", "15");
+        sdkInfo.put("targetSdkVersion", "25");
+        sdkInfo.put("maxSdkVersion", "19");
+
+        apkInfo.setSdkInfo(sdkInfo);
+        assertEquals("19", apkInfo.checkTargetSdkVersionBounds());
+    }
+
+    @Test
+    public void checkIfMissingMinPasses() {
+        ApkInfo apkInfo = new ApkInfo();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("targetSdkVersion", "25");
+        sdkInfo.put("maxSdkVersion", "19");
+
+        apkInfo.setSdkInfo(sdkInfo);
+        assertEquals("19", apkInfo.checkTargetSdkVersionBounds());
+    }
+
+    @Test
+    public void checkIfMissingMaxPasses() {
+        ApkInfo apkInfo = new ApkInfo();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("minSdkVersion", "15");
+        sdkInfo.put("targetSdkVersion", "25");
+
+        apkInfo.setSdkInfo(sdkInfo);
+        assertEquals("25", apkInfo.checkTargetSdkVersionBounds());
+    }
+
+    @Test
+    public void checkIfMissingBothPasses() {
+        ApkInfo apkInfo = new ApkInfo();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("targetSdkVersion", "25");
+
+        apkInfo.setSdkInfo(sdkInfo);
+        assertEquals("25", apkInfo.checkTargetSdkVersionBounds());
+    }
+
+    @Test
+    public void checkForShortHandSTag() {
+        ApkInfo apkInfo = new ApkInfo();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("targetSdkVersion", "S");
+
+        apkInfo.setSdkInfo(sdkInfo);
+        assertEquals("31", apkInfo.checkTargetSdkVersionBounds());
+    }
+
+    @Test
+    public void checkForShortHandSdkTag() {
+        ApkInfo apkInfo = new ApkInfo();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("targetSdkVersion", "O");
+
+        apkInfo.setSdkInfo(sdkInfo);
+        assertEquals("26", apkInfo.checkTargetSdkVersionBounds());
+    }
+
+    @Test
+    public void checkForSdkDevelopmentInsaneTestValue() {
+        ApkInfo apkInfo = new ApkInfo();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("targetSdkVersion", "VANILLAICECREAM");
+
+        apkInfo.setSdkInfo(sdkInfo);
+        assertEquals("10000", apkInfo.checkTargetSdkVersionBounds());
+    }
+}
