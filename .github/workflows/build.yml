@@ -128,7 +128,7 @@ jobs:
           ORG_GRADLE_PROJECT_dependencyVerification: off
 
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: apktool.jar
           path: brut.apktool/apktool-cli/build/libs/apktool-*.jar
