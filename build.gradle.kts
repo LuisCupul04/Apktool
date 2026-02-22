@@ -79,8 +79,15 @@ subprojects {
     apply(plugin = "java-library")
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        // Configuración de toolchain: usa la versión de JAVA de la variable de entorno MATRIX_JAVA, o 8 por defecto
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(System.getenv("MATRIX_JAVA") ?: "8")
+        }
+    }
+
+    // Opcional: desactivar javadoc si da problemas (puedes eliminarlo si no es necesario)
+    tasks.withType<Javadoc>().configureEach {
+        enabled = false
     }
 
     val mavenProjects = arrayOf(
@@ -167,7 +174,6 @@ tasks.wrapper {
 
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-Xlint:-options")
-    options.compilerArgs.add("--release 8")
     options.encoding = "UTF-8"
 }
 
