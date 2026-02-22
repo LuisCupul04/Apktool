@@ -76,14 +76,19 @@ jobs:
 
       - uses: actions/setup-java@v5
         with:
-          distribution: 'corretto'          # Cambiado a corretto
+          distribution: 'corretto'
           java-version: ${{ matrix.java }}
-      - name: Build and test
-        uses: gradle/gradle-build-action@v3.5.0
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: ${{ secrets.EXTEN_TOKEN }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: wrapper
-          cache-read-only: "${{ github.ref != 'refs/heads/master' }}"
+          cache-read-only: ${{ github.ref != 'refs/heads/master' }}
           cache-cleanup: never
+        continue-on-error: true
 
       - name: Build and test
         shell: bash
@@ -108,14 +113,19 @@ jobs:
 
       - uses: actions/setup-java@v5
         with:
-          distribution: 'corretto'          # También cambiado aquí
+          distribution: 'corretto'
           java-version: 17
-      - name: Build
-        uses: gradle/gradle-build-action@v3.5.0
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: ${{ secrets.EXTEN_TOKEN }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: wrapper
           cache-read-only: false
           cache-cleanup: never
+        continue-on-error: true
 
       - name: Build
         shell: bash
