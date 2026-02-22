@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: luiscupul04/apktool   # <-- minúsculas
+  IMAGE_NAME: luiscupul04/apktool
 
 jobs:
   build_and_push:
@@ -44,3 +44,5 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.APKTOOL_HASH }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:beta
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.EXTEN_TOKEN }}
