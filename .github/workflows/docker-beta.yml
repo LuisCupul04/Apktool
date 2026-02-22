@@ -7,10 +7,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: LuisCupul04/apktool
+  IMAGE_NAME: luiscupul04/apktool   # <-- minúsculas
 
 jobs:
-
   build_and_push:
     name: Build and push
     runs-on: ubuntu-latest
