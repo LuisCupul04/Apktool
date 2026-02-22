@@ -79,13 +79,11 @@ subprojects {
     apply(plugin = "java-library")
 
     java {
-        // Configuración de toolchain: usa la versión de JAVA de la variable de entorno MATRIX_JAVA, o 8 por defecto
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(System.getenv("MATRIX_JAVA") ?: "8")
-        }
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    // Opcional: desactivar javadoc si da problemas (puedes eliminarlo si no es necesario)
+    // Opcional: desactivar javadoc
     tasks.withType<Javadoc>().configureEach {
         enabled = false
     }
@@ -174,6 +172,7 @@ tasks.wrapper {
 
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-Xlint:-options")
+    options.compilerArgs.add("--release 8")   // <-- AÑADIR
     options.encoding = "UTF-8"
 }
 
