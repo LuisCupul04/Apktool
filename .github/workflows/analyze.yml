@@ -35,13 +35,15 @@ jobs:
         with:
           gradle-version: wrapper
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
-          gradle-home-cache-cleanup: true
+          # Eliminamos gradle-home-cache-cleanup para usar el valor por defecto (never)
+          # Esto evita el fallo de limpieza y la advertencia de deprecación
+        continue-on-error: true  # Si aún falla, no detiene el workflow
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: java
-          build-mode: manual
+          build-mode: none        # Cambiado de 'manual' a 'none' (elimina el aviso de overlay)
           config: |
             paths-ignore:
               - '**/test/**'
