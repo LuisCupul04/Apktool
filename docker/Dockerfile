@@ -2,11 +2,12 @@
 # =====================================================
 FROM ibm-semeru-runtimes:open-17-jdk-jammy AS builder
 
+ARG GITHUB_TOKEN
+
 COPY . /build
 WORKDIR /build
-RUN \
-    # Apktool
-    ./gradlew build shadowJar proguard
+
+RUN ./gradlew build shadowJar proguard -Dorg.gradle.project.githubToken=$GITHUB_TOKEN --no-daemon
 
 RUN \
     # Relocate for easier copying

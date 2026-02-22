@@ -7,10 +7,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: LuisCupul04/apktool
+  IMAGE_NAME: luiscupul04/apktool  # <-- todo minúsculas
 
 jobs:
-
   build_and_push:
     name: Build and push
     runs-on: ubuntu-latest
@@ -25,17 +24,17 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.EXTEN_TOKEN }}   # <-- cambio aquí
 
       - name: Get hash
         id: hash
         run: echo "APKTOOL_HASH=$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64
@@ -45,3 +44,5 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.APKTOOL_HASH }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:beta
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.EXTEN_TOKEN }}
