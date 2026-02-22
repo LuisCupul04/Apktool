@@ -2,6 +2,12 @@
 # =====================================================
 FROM ibm-semeru-runtimes:open-17-jdk-jammy AS builder
 
+# Instalar JDK 8 para la toolchain de Gradle
+RUN apt-get update && apt-get install -y openjdk-8-jdk && rm -rf /var/lib/apt/lists/*
+
+# Indicar a Gradle que use JDK 8 para compilar
+ENV MATRIX_JAVA=8
+
 ARG GITHUB_TOKEN
 
 COPY . /build
