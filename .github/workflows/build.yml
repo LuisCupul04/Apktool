@@ -78,12 +78,8 @@ jobs:
         with:
           distribution: 'corretto'          # Cambiado a corretto
           java-version: ${{ matrix.java }}
-          server-id: github
-          server-username: GITHUB_ACTOR
-          server-password: ${{ secrets.EXTEN_TOKEN }}
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: Build and test
+        uses: gradle/gradle-build-action@v3.5.0
         with:
           gradle-version: wrapper
           cache-read-only: "${{ github.ref != 'refs/heads/master' }}"
@@ -114,12 +110,8 @@ jobs:
         with:
           distribution: 'corretto'          # También cambiado aquí
           java-version: 17
-          server-id: github
-          server-username: GITHUB_ACTOR
-          server-password: ${{ secrets.EXTEN_TOKEN }}
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        uses: gradle/gradle-build-action@v3.5.0
         with:
           gradle-version: wrapper
           cache-read-only: false
