@@ -29,33 +29,40 @@ COPY --from=builder /build/scripts/linux/apktool /usr/local/bin/apktool
 
 RUN \
     # Update
-    apt-get update &&\
+    apt-get update && \
     \
     # Apktool final setup
-    chmod +x /usr/local/bin/apktool /usr/local/bin/apktool.jar &&\
+    chmod +x /usr/local/bin/apktool /usr/local/bin/apktool.jar && \
     \
-    # Android SDK
+    # Instalar dependencias necesarias (sin sdkmanager del sistema)
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
-        zipalign \
+        unzip \
+        wget \
         git \
         openssl \
-        wget \
-        unzip \
-        sdkmanager &&\
-    curl -o /tmp/tools.zip https://dl.google.com/android/repository/commandlinetools-linux-${COMMAND_LINE_TOOLS_VERSION}_latest.zip &&\
-    mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools &&\
-    unzip -q /tmp/tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools &&\
-    mv ${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest &&\
-    rm -v /tmp/tools.zip &&\
-    mkdir -p /root/.android/ && touch /root/.android/repositories.cfg &&\
-    yes | sdkmanager --licenses &&\
-    export BUILD_TOOLS_VERSION=$(sdkmanager --list |grep build-tools |grep -v rc |awk '{print $1}' |sed 's/build-tools;//g' |sort |tail -n1) &&\
-    sdkmanager --install "build-tools;${BUILD_TOOLS_VERSION}" &&\
-    ln -s ${ANDROID_SDK_ROOT}/build-tools/${BUILD_TOOLS_VERSION} /opt/bin &&\
+        zipalign && \
     \
-    # Cleanup
+    # Descargar Command Line Tools de Android
+    curl -o /tmp/tools.zip https://dl.google.com/android/repository/commandlinetools-linux-${COMMAND_LINE_TOOLS_VERSION}_latest.zip && \
+    mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools && \
+    unzip -q /tmp/tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools && \
+    mv ${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest && \
+    rm -v /tmp/tools.zip && \
+    \
+    # Configurar variables para usar el sdkmanager recién instalado
+    export PATH=${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${PATH} && \
+    mkdir -p /root/.android/ && touch /root/.android/repositories.cfg && \
+    \
+    # Aceptar licencias automáticamente (usando el sdkmanager correcto)
+    yes | sdkmanager --licenses && \
+    \
+    # Instalar una versión específica de build-tools (cambia la versión si es necesario)
+    sdkmanager "build-tools;34.0.0" && \
+    ln -s ${ANDROID_SDK_ROOT}/build-tools/34.0.0 /opt/bin && \
+    \
+    # Limpiar
     rm -rf /var/lib/apt/lists/*
 
 ENV PATH ${PATH}:/opt/bin
