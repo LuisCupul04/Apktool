@@ -12,17 +12,51 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    # Esta condición evita que el workflow falle en PRs desde forks, donde el token no tiene permisos.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      security-events: write # Necesario para subir resultados a Code Scanning
+      contents: read
+      packages: read       # Importante: Permite leer paquetes de GitHub Packages
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          # Esta configuración le dice a Gradle/Maven cómo autenticarse en GitHub Packages
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: ${{ secrets.EXTEN_TOKEN }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: java
+          # A veces es útil pasar la configuración de autenticación al extractor
+          config: |
+            paths-ignore:
+              - '**/test/**'
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+      # 🔥 PASO CLAVE: Reemplazar el autobuild con una compilación manual
+      - name: Build with Gradle
+        run: |
+          # Este comando pasa el token como propiedad del sistema a Gradle
+          # Así, en tu build.gradle puedes leerlo para autenticarte
+          ./gradlew clean testClasses \
+            -Dorg.gradle.project.githubToken=${{ secrets.EXTEN_TOKEN }} \
+            --no-daemon
+        env:
+          # También lo exponemos como variable de entorno por si es necesario en scripts
+          GITHUB_TOKEN: ${{ secrets.EXTEN_TOKEN }}
+          # Importante: deshabilitar la verificación de dependencias para evitar problemas en CI
+          ORG_GRADLE_PROJECT_dependencyVerification: off
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
