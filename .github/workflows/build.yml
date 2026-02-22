@@ -139,4 +139,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apktool.jar
-          path: brut.apktool/apktool-cli/build/libs/apktool-v*
+          path: brut.apktool/apktool-cli/build/libs/apktool-*.jar
