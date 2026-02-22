@@ -11,6 +11,7 @@ shadow = "8.1.1"
 smali = "3.0.9.RE"
 xmlpull = "1.1.4c"
 xmlunit = "2.11.0"
+shadow = "9.3.0" # <--- ACTUALIZADO: versión recomendada para Gradle 9
 
 [libraries]
 baksmali = { module = "com.extenre:smali-baksmali", version.ref = "baksmali" }
@@ -26,4 +27,4 @@ xmlpull = { module = "xpp3:xpp3", version.ref = "xmlpull" }
 xmlunit = { module = "org.xmlunit:xmlunit-legacy", version.ref = "xmlunit" }
 
 [plugins]
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" } # <--- NUEVO ID y versión
