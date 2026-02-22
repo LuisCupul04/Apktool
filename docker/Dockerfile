@@ -44,6 +44,6 @@ RUN \
     ln -s ${ANDROID_SDK_ROOT}/build-tools/34.0.0 /opt/bin && \
     rm -rf /var/lib/apt/lists/*
 
-ENV PATH=${PATH}:/opt/bin   # Formato moderno para evitar warning
+//ENV PATH=${PATH}:/opt/bin   # Formato moderno para evitar warning
 
 CMD ["/usr/local/bin/apktool"]
