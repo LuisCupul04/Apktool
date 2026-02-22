@@ -1,16 +1,19 @@
 [versions]
 baksmali = "3.0.9.RE"
+
 commons_io = "2.21.0"
 commons_cli = "1.5.0"
+commons_io = "2.14.0"
+commons_cli = "1.11.0"
 commons_lang3 = "3.13.0"
 commons_text = "1.10.0"
-guava = "32.0.1-jre"
+guava = "33.5.0-jre"
 junit = "4.13.2"
 proguard = "7.3.2"
 shadow = "8.1.1"
 smali = "3.0.9.RE"
 xmlpull = "1.1.4c"
-xmlunit = "2.9.1"
+xmlunit = "2.11.0"
 
 [libraries]
 baksmali = { module = "com.extenre:smali-baksmali", version.ref = "baksmali" }

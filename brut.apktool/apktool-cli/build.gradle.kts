@@ -59,6 +59,7 @@ tasks.register<ProGuardTask>("proguard") {
 
     dontobfuscate()
     dontoptimize()
+    ignorewarnings()  // <--- AÑADE ESTA LÍNEA
 
     keep("class brut.apktool.Main { public static void main(java.lang.String[]); }")
     keepclassmembers("enum * { public static **[] values(); public static ** valueOf(java.lang.String); }")
