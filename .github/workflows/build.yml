@@ -76,7 +76,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'          # Cambiado de 'zulu' a 'temurin'
+          distribution: 'corretto'          # Cambiado a corretto
           java-version: ${{ matrix.java }}
           server-id: github
           server-username: GITHUB_ACTOR
@@ -112,7 +112,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'          # Cambiado también aquí
+          distribution: 'corretto'          # También cambiado aquí
           java-version: 17
           server-id: github
           server-username: GITHUB_ACTOR
