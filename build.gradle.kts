@@ -1,6 +1,6 @@
 import java.io.ByteArrayOutputStream
 
-val version = "3.0.1"
+val version = "3.0.3"
 val suffix = ".RE"
 
 // Strings embedded into the build.

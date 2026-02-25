@@ -41,7 +41,7 @@ public class ApkDecoder {
     private final static Logger LOGGER = Logger.getLogger(ApkDecoder.class.getName());
 
     private final Config mConfig;
-    private final ApkInfo mApkInfo;
+    private ApkInfo mApkInfo;          // ✅ modificado (sin final)
     private int mMinSdkVersion = 0;
 
     private final static String SMALI_DIRNAME = "smali";
@@ -72,6 +72,11 @@ public class ApkDecoder {
     public ApkDecoder(Config config, ExtFile apkFile) {
         mConfig = config;
         mApkInfo = new ApkInfo(apkFile);
+    }
+    
+    public ApkDecoder(ApkInfo apkInfo, Config config) {
+        this(config, apkInfo.getApkFile());
+        this.mApkInfo = apkInfo;
     }
 
     public ApkInfo decode(File outDir) throws AndrolibException, IOException, DirectoryException {
@@ -318,7 +323,7 @@ public class ApkDecoder {
         }
     }
 
-    private void recordUncompressedFiles(Map<String, String> resFileMapping) throws AndrolibException {
+    public void recordUncompressedFiles(Map<String, String> resFileMapping) throws AndrolibException {
         try {
             List<String> uncompressedFilesOrExts = new ArrayList<>();
             Directory unk = mApkInfo.getApkFile().getDirectory();
