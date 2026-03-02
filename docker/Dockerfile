@@ -1,15 +1,26 @@
 # BUILDER
 FROM ibm-semeru-runtimes:open-17-jdk-jammy AS builder
 
-ARG GITHUB_TOKEN
+# Monta el secreto en tiempo de compilación
+RUN --mount=type=secret,id=GITHUB_TOKEN \
+    export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
+    ./gradlew build shadowJar proguard \
+      -Dorg.gradle.project.githubToken=$GITHUB_TOKEN \
+      --no-daemon
 
 COPY . /build
 WORKDIR /build
 
-RUN ./gradlew build shadowJar proguard -Dorg.gradle.project.githubToken=$GITHUB_TOKEN --no-daemon
+# La compilación ya se hizo en el RUN anterior, pero si prefieres hacerlo aquí,
+# mueve el COPY antes del RUN y ajusta. La forma más limpia es:
+# COPY . /build
+# WORKDIR /build
+# RUN --mount=type=secret,id=GITHUB_TOKEN \
+#     export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
+#     ./gradlew build shadowJar proguard -Dorg.gradle.project.githubToken=$GITHUB_TOKEN --no-daemon
 
-RUN \
-    JAR=$(find /build/brut.apktool/apktool-cli/build/libs/apktool-*.jar |grep -v cli-all) &&\
+# Luego copia el jar resultante
+RUN JAR=$(find /build/brut.apktool/apktool-cli/build/libs/apktool-*.jar | grep -v cli-all) && \
     mv ${JAR} /build/apktool.jar
 
 # BASE
@@ -44,7 +55,6 @@ RUN \
     ln -s ${ANDROID_SDK_ROOT}/build-tools/34.0.0 /opt/bin && \
     rm -rf /var/lib/apt/lists/*
 
-# Formato moderno para evitar warning
 ENV PATH=${PATH}:/opt/bin
 
 CMD ["/usr/local/bin/apktool"]
