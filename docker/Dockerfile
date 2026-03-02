@@ -1,25 +1,18 @@
 # BUILDER
 FROM ibm-semeru-runtimes:open-17-jdk-jammy AS builder
 
-# Monta el secreto en tiempo de compilación
+# Copiar todo el código primero (así gradlew existe)
+COPY . /build
+WORKDIR /build
+
+# Montar el secreto y compilar
 RUN --mount=type=secret,id=GITHUB_TOKEN \
     export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
     ./gradlew build shadowJar proguard \
       -Dorg.gradle.project.githubToken=$GITHUB_TOKEN \
       --no-daemon
 
-COPY . /build
-WORKDIR /build
-
-# La compilación ya se hizo en el RUN anterior, pero si prefieres hacerlo aquí,
-# mueve el COPY antes del RUN y ajusta. La forma más limpia es:
-# COPY . /build
-# WORKDIR /build
-# RUN --mount=type=secret,id=GITHUB_TOKEN \
-#     export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
-#     ./gradlew build shadowJar proguard -Dorg.gradle.project.githubToken=$GITHUB_TOKEN --no-daemon
-
-# Luego copia el jar resultante
+# Mover el JAR generado a una ubicación fija
 RUN JAR=$(find /build/brut.apktool/apktool-cli/build/libs/apktool-*.jar | grep -v cli-all) && \
     mv ${JAR} /build/apktool.jar
 
