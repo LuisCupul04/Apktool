@@ -1,7 +1,7 @@
-# BUILDER
-FROM ibm-semeru-runtimes:open-17-jdk-jammy AS builder
+# BUILDER - Usar JDK 21
+FROM ibm-semeru-runtimes:open-21-jdk-jammy AS builder
 
-# Copiar todo el código primero (así gradlew existe)
+# Copiar todo el código
 COPY . /build
 WORKDIR /build
 
@@ -16,8 +16,8 @@ RUN --mount=type=secret,id=GITHUB_TOKEN \
 RUN JAR=$(find /build/brut.apktool/apktool-cli/build/libs/apktool-*.jar | grep -v cli-all) && \
     mv ${JAR} /build/apktool.jar
 
-# BASE
-FROM ibm-semeru-runtimes:open-17-jre-jammy AS base
+# BASE - Usar JRE 21 para ejecución
+FROM ibm-semeru-runtimes:open-21-jre-jammy AS base
 
 ARG COMMAND_LINE_TOOLS_VERSION=10406996
 ARG ANDROID_SDK_ROOT=/opt/android-sdk
