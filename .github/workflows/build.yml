@@ -63,13 +63,13 @@ jobs:
   build-and-test-with-Java-8-and-later:
     runs-on: ${{ matrix.os }}
     needs: [analyze-mac-aapt, analyze-linux-aapt, analyze-windows-aapt]
-    name: Build/Test (JDK ${{ matrix.java }}, ${{ matrix.os }})   # ← SIN ESPACIO EXTRA
-    strategy:                                                      # ← MISMA INDENTACIÓN QUE runs-on
+    name: Build/Test (JDK ${{ matrix.java }}, ${{ matrix.os }})
+    strategy:
       fail-fast: true
       matrix:
         os: [ ubuntu-latest, macOS-latest, windows-latest ]
-        java: [ 8, 11, 17, 18, 19, 20 ]
-    steps:                                                         # ← MISMA INDENTACIÓN
+        java: [ 21 ]                     # Solo Java 21, que es el requerido
+    steps:
       - uses: actions/checkout@v6
 
       - name: Setup JDK ${{ matrix.java }} (for toolchain)
@@ -117,12 +117,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Instalar JDK 8 para la toolchain (compilación)
-      - name: Setup JDK 8 (for toolchain)
+      # Instalar JDK 21 para la toolchain (compilación) - antes era 8
+      - name: Setup JDK 21 (for toolchain)
         uses: actions/setup-java@v5
         with:
           distribution: 'corretto'
-          java-version: 8
+          java-version: 21
 
       # Instalar JDK 17 para ejecutar Gradle
       - name: Setup JDK 17 (for Gradle execution)
@@ -131,9 +131,9 @@ jobs:
           distribution: 'corretto'
           java-version: 17
 
-      # Definir variable para que la toolchain use JDK 8
+      # Definir variable para que la toolchain use JDK 21 - antes era 8
       - name: Set MATRIX_JAVA
-        run: echo "MATRIX_JAVA=8" >> $GITHUB_ENV
+        run: echo "MATRIX_JAVA=21" >> $GITHUB_ENV
         shell: bash
 
       - name: Setup Gradle

@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'                # Cambiado de 17 a 21
           server-id: github
           server-username: GITHUB_ACTOR
           server-password: ${{ secrets.EXTEN_TOKEN }}
