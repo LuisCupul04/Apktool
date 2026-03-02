@@ -59,7 +59,7 @@ jobs:
       - name: Output Static
         run: ldd ${{ env.BINARY_PATH }}/windows/${{ matrix.file }} || true
 
-  # --- JOB PRINCIPAL DE PRUEBAS (CORREGIDO) ---
+  # --- JOB PRINCIPAL DE PRUEBAS (AHORA SOLO JDK 21) ---
   build-and-test-with-Java-8-and-later:
     runs-on: ${{ matrix.os }}
     needs: [analyze-mac-aapt, analyze-linux-aapt, analyze-windows-aapt]
@@ -68,21 +68,15 @@ jobs:
       fail-fast: true
       matrix:
         os: [ ubuntu-latest, macOS-latest, windows-latest ]
-        java: [ 21 ]                     # Solo Java 21, que es el requerido
+        java: [ 21 ]                               # Solo 21, el requerido
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup JDK ${{ matrix.java }} (for toolchain)
+      - name: Setup JDK ${{ matrix.java }}
         uses: actions/setup-java@v5
         with:
           distribution: 'corretto'
           java-version: ${{ matrix.java }}
-
-      - name: Setup JDK 17 (for Gradle execution)
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'corretto'
-          java-version: 17
 
       - name: Set MATRIX_JAVA
         run: echo "MATRIX_JAVA=${{ matrix.java }}" >> $GITHUB_ENV
@@ -106,7 +100,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.EXTEN_TOKEN }}
           ORG_GRADLE_PROJECT_dependencyVerification: off
 
-  # --- JOB DE SUBIDA DE ARTEFACTO (MEJORADO) ---
+  # --- JOB DE SUBIDA DE ARTEFACTO (TAMBIÉN CON JDK 21) ---
   upload-artifact:
     runs-on: ubuntu-latest
     name: Build apktool.jar
@@ -117,21 +111,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Instalar JDK 21 para la toolchain (compilación) - antes era 8
-      - name: Setup JDK 21 (for toolchain)
+      - name: Setup JDK 21
         uses: actions/setup-java@v5
         with:
           distribution: 'corretto'
           java-version: 21
 
-      # Instalar JDK 17 para ejecutar Gradle
-      - name: Setup JDK 17 (for Gradle execution)
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'corretto'
-          java-version: 17
-
-      # Definir variable para que la toolchain use JDK 21 - antes era 8
       - name: Set MATRIX_JAVA
         run: echo "MATRIX_JAVA=21" >> $GITHUB_ENV
         shell: bash
