@@ -33,7 +33,6 @@ jobs:
         id: tag
         run: echo "APKTOOL_TAG=$(echo ${GITHUB_REF:-no-tag} | sed 's|refs/tags/||g')" >> $GITHUB_ENV
 
-      # Convertir el nombre de la imagen a minúsculas (requerido por ghcr.io)
       - name: Convert image name to lowercase
         run: |
           IMAGE_LC=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
@@ -54,3 +53,5 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ env.APKTOOL_TAG }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:prod
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
+          secrets: |
+            GITHUB_TOKEN=${{ secrets.EXTEN_TOKEN }}   # <-- NUEVO
