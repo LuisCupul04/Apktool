@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 public class StringBlock {
     public static StringBlock readWithChunk(ExtCountingDataInput reader) throws IOException {
-        int startPosition = reader.position();
+        long startPosition = reader.position();   // ← cambiado de int a long
         reader.skipCheckShort(ARSCHeader.RES_STRING_POOL_TYPE);
         int headerSize = reader.readShort();
         int chunkSize = reader.readInt();
@@ -41,8 +41,8 @@ public class StringBlock {
         return readWithoutChunk(reader, startPosition, headerSize, chunkSize);
     }
 
-    public static StringBlock readWithoutChunk(ExtCountingDataInput reader, int startPosition, int headerSize,
-                                               int chunkSize) throws IOException
+    public static StringBlock readWithoutChunk(ExtCountingDataInput reader, long startPosition, int headerSize,
+                                               int chunkSize) throws IOException   // ← parámetro cambiado a long
     {
         // ResStringPool_header
         int stringCount = reader.readInt();

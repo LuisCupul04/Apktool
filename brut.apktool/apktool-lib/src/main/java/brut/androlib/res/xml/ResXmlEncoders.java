@@ -27,6 +27,7 @@ import java.util.List;
 
 public final class ResXmlEncoders {
 
+    @SuppressWarnings("deprecation")
     public static String escapeXmlChars(String str) {
         return StringUtils.replace(StringUtils.replace(str, "&", "&amp;"), "<", "&lt;");
     }

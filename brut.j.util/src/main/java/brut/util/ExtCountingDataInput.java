@@ -26,12 +26,16 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 public class ExtCountingDataInput extends ExtDataInput {
+    // Suprimimos el warning porque la clase CountingInputStream está deprecada en commons-io
+    @SuppressWarnings("deprecation")
     private final CountingInputStream mCountIn;
 
+    @SuppressWarnings("deprecation")
     public ExtCountingDataInput(LittleEndianDataInputStream in) {
         this(new CountingInputStream(in));
     }
 
+    @SuppressWarnings("deprecation")
     public ExtCountingDataInput(CountingInputStream countIn) {
         // We need to explicitly cast to DataInput as otherwise the constructor is ambiguous.
         // We choose DataInput instead of InputStream as ExtDataInput wraps an InputStream in
@@ -40,15 +44,16 @@ public class ExtCountingDataInput extends ExtDataInput {
         mCountIn = countIn;
     }
 
-    public int position() {
-        return mCountIn.getCount();
+    // Cambiamos getCount() por getByteCount() (no deprecado) y retornamos long
+    public long position() {
+        return mCountIn.getByteCount();
     }
 
     public int remaining() throws IOException {
         return mCountIn.available();
     }
 
-    public long skip(int bytes) throws IOException {
+    public long skip(long bytes) throws IOException {
         return mCountIn.skip(bytes);
     }
 

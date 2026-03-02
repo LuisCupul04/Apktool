@@ -247,7 +247,8 @@ public class ARSCDecoder {
         int entryCount = mIn.readInt();
 
         if (mFlagsOffsets != null) {
-            mFlagsOffsets.add(new FlagsOffset(mIn.position(), entryCount));
+            // Cast necesario porque FlagsOffset espera int y position() devuelve long
+            mFlagsOffsets.add(new FlagsOffset((int) mIn.position(), entryCount));
         }
 
         mHeader.checkForUnreadHeader(mIn);
@@ -433,6 +434,7 @@ public class ARSCDecoder {
         int count = mIn.readInt();
 
         ResValueFactory factory = mPkg.getValueFactory();
+        @SuppressWarnings("unchecked")
         Duo<Integer, ResScalarValue>[] items = new Duo[count];
         ResIntBasedValue resValue;
         int resId;

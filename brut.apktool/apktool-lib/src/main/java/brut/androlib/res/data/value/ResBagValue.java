@@ -34,6 +34,7 @@ public class ResBagValue extends ResValue implements ResValuesXmlSerializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void serializeToResValuesXml(XmlSerializer serializer,
                                         ResResource res) throws IOException, AndrolibException {
         String type = res.getResSpec().getType().getName();

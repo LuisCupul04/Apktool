@@ -1,6 +1,6 @@
 import java.io.ByteArrayOutputStream
 
-val version = "3.0.3"
+val version = "3.0.4"
 val suffix = ".RE"
 
 // Strings embedded into the build.
@@ -79,8 +79,8 @@ subprojects {
     apply(plugin = "java-library")
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     // Opcional: desactivar javadoc
@@ -159,6 +159,14 @@ subprojects {
         signing {
             sign(publishing.publications["mavenJava"])
         }
+        
+        tasks.withType<JavaCompile> {
+            options.encoding = "UTF-8"
+            options.compilerArgs.addAll(listOf(
+                "-Xlint:deprecation",
+                "-Xlint:unchecked"
+            ))
+        }
     }
 }
 
@@ -168,12 +176,6 @@ tasks.register("release") {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
-}
-
-tasks.withType<JavaCompile> {
-    options.compilerArgs.add("-Xlint:-options")
-    options.compilerArgs.add("--release 8")   // <-- AÑADIR
-    options.encoding = "UTF-8"
 }
 
 // Opcional: deshabilitar metadatos de módulo de Gradle si no se desean

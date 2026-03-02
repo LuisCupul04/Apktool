@@ -95,6 +95,8 @@ public class ResResSpec {
         return mId;
     }
 
+    // 👇 ELIMINAMOS @Override, solo dejamos @SuppressWarnings
+    @SuppressWarnings("deprecation")
     public String getName() {
         return StringUtils.replace(mName, "\"", "q");
     }

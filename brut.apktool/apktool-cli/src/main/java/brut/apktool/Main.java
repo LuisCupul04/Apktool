@@ -37,6 +37,7 @@ import java.util.logging.*;
 /**
  * Main entry point of the apktool.
  */
+@SuppressWarnings("deprecation") // Suprime todos los warnings de deprecación en toda la clase
 public class Main {
     public static void main(String[] args) throws BrutException {
 

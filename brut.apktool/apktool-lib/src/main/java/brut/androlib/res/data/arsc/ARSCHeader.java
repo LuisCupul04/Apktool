@@ -30,26 +30,26 @@ public class ARSCHeader {
     public final short type;
     public final int headerSize;
     public final int chunkSize;
-    public final int startPosition;
-    public final int endPosition;
+    public final long startPosition;    // ← cambiado de int a long
+    public final long endPosition;      // ← cambiado de int a long
 
-    public ARSCHeader(short type, int headerSize, int chunkSize, int headerStart) {
+    public ARSCHeader(short type, int headerSize, int chunkSize, long headerStart) { // ← parámetro ahora es long
         this.type = type;
         this.headerSize = headerSize;
         this.chunkSize = chunkSize;
         this.startPosition = headerStart;
-        this.endPosition = headerStart + chunkSize;
+        this.endPosition = headerStart + chunkSize; // ← long + int = long
     }
 
     public static ARSCHeader read(ExtCountingDataInput in) throws IOException {
         short type;
-        int start = in.position();
+        long start = in.position();    // ← ahora es long
         try {
             type = in.readShort();
         } catch (EOFException ex) {
-            return new ARSCHeader(RES_NONE_TYPE, 0, 0, in.position());
+            return new ARSCHeader(RES_NONE_TYPE, 0, 0, in.position()); // ← in.position() es long
         }
-        return new ARSCHeader(type, in.readShort(), in.readInt(), start);
+        return new ARSCHeader(type, in.readShort(), in.readInt(), start); // ← start es long
     }
 
     public void checkForUnreadHeader(ExtCountingDataInput in) throws IOException {
@@ -57,8 +57,8 @@ public class ARSCHeader {
         // So compare to what we actually read in the header vs reported and skip the rest.
         // However, this runs after each chunk and not every chunk reading has a specific distinction between the
         // header and the body.
-        int actualHeaderSize = in.position() - this.startPosition;
-        int exceedingSize = this.headerSize - actualHeaderSize;
+        long actualHeaderSize = in.position() - this.startPosition; // ← ahora long
+        int exceedingSize = this.headerSize - (int) actualHeaderSize; // ← cast a int (asumimos que actualHeaderSize cabe en int)
         if (exceedingSize > 0) {
             byte[] buf = new byte[exceedingSize];
             in.readFully(buf);

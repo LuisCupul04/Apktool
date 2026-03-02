@@ -90,6 +90,8 @@ public class ResAttr extends ResBagValue implements ResValuesXmlSerializable {
         if (i == items.length) {
             return new ResAttr(parent, scalarType, min, max, l10n);
         }
+        
+        @SuppressWarnings("unchecked")
         Duo<ResReferenceValue, ResScalarValue>[] attrItems = new Duo[items.length - i];
         int j = 0;
         for (; i < items.length; i++) {
